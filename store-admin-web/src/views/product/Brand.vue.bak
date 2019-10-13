@@ -59,8 +59,8 @@
 				<el-form-item label="姓名" prop="name">
 					<el-input v-model="editForm.name" auto-complete="off"></el-input>
 				</el-form-item>
-				
-				
+				<el-form-item label="性别">
+				</el-form-item>
 				<el-form-item label="英文名称">
 					<el-input-number v-model="editForm.englishName" :min="0" :max="200"></el-input-number>
 				</el-form-item>
@@ -88,24 +88,22 @@
 		<el-dialog title="新增" v-model="addFormVisible" :close-on-click-modal="false">
 			<el-form :model="addForm" label-width="80px" :rules="addFormRules" ref="addForm">
 				<el-form-item label="姓名" prop="name">
-					<el-input v-model="editForm.name" auto-complete="off"></el-input>
+					<el-input v-model="addForm.name" auto-complete="off"></el-input>
 				</el-form-item>
-				
-				<el-form-item label="英文名称">
-					<el-input-number v-model="editForm.englishName" :min="0" :max="200"></el-input-number>
+				<el-form-item label="性别">
+					<el-radio-group v-model="addForm.sex">
+						<el-radio class="radio" :label="1">男</el-radio>
+						<el-radio class="radio" :label="0">女</el-radio>
+					</el-radio-group>
 				</el-form-item>
-				
-				<el-form-item label="首字母">
-					<el-input type="textarea" v-model="editForm.firstLetter"></el-input>
+				<el-form-item label="年龄">
+					<el-input-number v-model="addForm.age" :min="0" :max="200"></el-input-number>
 				</el-form-item>
-				<el-form-item label="LOGO">
-					<el-input type="textarea" v-model="editForm.logo"></el-input>
+				<el-form-item label="生日">
+					<el-date-picker type="date" placeholder="选择日期" v-model="addForm.birth"></el-date-picker>
 				</el-form-item>
-				<el-form-item label="商品类型">
-					<el-input type="textarea" v-model="editForm.productType.name"></el-input>
-				</el-form-item>
-				<el-form-item label="描述">
-					<el-input type="textarea" v-model="editForm.description"></el-input>
+				<el-form-item label="地址">
+					<el-input type="textarea" v-model="addForm.addr"></el-input>
 				</el-form-item>
 			</el-form>
 			<div slot="footer" class="dialog-footer">
@@ -145,10 +143,10 @@
 				editForm: {
 					id: 0,
 					name: '',
-					englishName:'',
-					productType.name: '',
-					description: '',
-					firstLetter: ''
+					sex: -1,
+					age: 0,
+					birth: '',
+					addr: ''
 				},
 
 				addFormVisible: false,//新增界面是否显示
@@ -161,16 +159,20 @@
 				//新增界面数据
 				addForm: {
 					name: '',
-					englishName:'',
-					productType.name: '',
-					description: '',
-					firstLetter: ''
+					sex: -1,
+					age: 0,
+					birth: '',
+					addr: ''
 				}
 
 			}
 		},
 		methods: {
-			
+			//性别显示转换
+			handleCurrentChange(val) {
+				this.page = val;
+				this.getbrands();
+			},
 			//获取品牌列表
 			getbrands() {
 			    //查询请求参数
@@ -212,8 +214,17 @@
                             type: 'error'
                         });
                         }
-                    });
-					
+                    })
+					let para = { id: row.id };
+					removeUser(para).then((res) => {
+						this.listLoading = false;
+						//NProgress.done();
+						this.$message({
+							message: '删除成功',
+							type: 'success'
+						});
+						this.getbrands();
+					});
 				}).catch(() => {
 
 				});
@@ -228,10 +239,10 @@
 				this.addFormVisible = true;
 				this.addForm = {
 					name: '',
-					englishName:'',
-					productType.name: '',
-					description: '',
-					firstLetter: ''
+					sex: -1,
+					age: 0,
+					birth: '',
+					addr: ''
 				};
 			},
 			//编辑
@@ -242,7 +253,7 @@
 							this.editLoading = true;
 							//NProgress.start();
 							let para = Object.assign({}, this.editForm);
-							
+							para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
 							editUser(para).then((res) => {
 								this.editLoading = false;
 								//NProgress.done();
@@ -266,7 +277,7 @@
 							this.addLoading = true;
 							//NProgress.start();
 							let para = Object.assign({}, this.addForm);
-							
+							para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
 							addUser(para).then((res) => {
 								this.addLoading = false;
 								//NProgress.done();
